@@ -211,6 +211,31 @@ const API = {
     return this.request(`/api/products/${productId}/media/${mediaId}`, {
       method: 'DELETE'
     });
+  },
+
+  // Purchase orders and movement logs endpoints
+  async getPurchases() {
+    return this.request('/api/purchases', { method: 'GET' });
+  },
+
+  async getPurchase(id) {
+    return this.request(`/api/purchases/${id}`, { method: 'GET' });
+  },
+
+  async createPurchase(data) {
+    return this.request('/api/purchases', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async getInventoryMovements(params = {}) {
+    const query = new URLSearchParams();
+    if (params.productId) query.append('productId', params.productId);
+    if (params.movementType) query.append('movementType', params.movementType);
+    if (params.limit) query.append('limit', params.limit);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/purchases/movements/all${qs}`, { method: 'GET' });
   }
 };
 

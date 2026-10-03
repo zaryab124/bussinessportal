@@ -83,6 +83,12 @@
       <a href="#" class="nav-link" id="nav-inventory">
         <span>📦</span> Inventory & Stock
       </a>
+      <a href="#" class="nav-link" id="nav-purchases">
+        <span>🛒</span> Purchases (PO)
+      </a>
+      <a href="#" class="nav-link" id="nav-movements">
+        <span>🔄</span> Stock Movements
+      </a>
       <a href="#" class="nav-link" id="nav-sales">
         <span>💰</span> Sales Register
       </a>
@@ -233,6 +239,83 @@
                 <tbody id="owners-table-body">
                   <tr>
                     <td colspan="6" style="text-align: center; padding: 20px;">Loading owners...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchases Management Panel (Phase 5) -->
+        <div id="purchases-panel" class="hidden">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Stock Purchases & Supply Orders</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Inbound vendor shipments, batch receipts, and weighted moving average cost calculations.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="PurchasesModule.openNewPurchaseModal()">
+                + New Purchase Order (PO)
+              </button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>PO Number</th>
+                    <th>Date</th>
+                    <th>Supplier</th>
+                    <th>Items</th>
+                    <th>Total Cost</th>
+                    <th>Status & Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="purchases-table-body">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">Loading purchases...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Movements Log Panel (Phase 5) -->
+        <div id="movements-panel" class="hidden">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Inventory Movement Logs</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Immutable audit timeline of all stock purchases, sales dispatches, and adjustments.</p>
+              </div>
+              <div>
+                <select id="movements-filter-type" class="form-control" style="max-width: 200px;">
+                  <option value="">All Movement Types</option>
+                  <option value="purchase_in">Purchase In</option>
+                  <option value="sale_out">Sale Out</option>
+                  <option value="adjustment_add">Adjustment Add</option>
+                  <option value="adjustment_subtract">Adjustment Subtract</option>
+                  <option value="damage_loss">Damage / Loss</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Product SKU</th>
+                    <th>Product Name</th>
+                    <th>Movement Type</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                  </tr>
+                </thead>
+                <tbody id="movements-table-body">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">Loading movements...</td>
                   </tr>
                 </tbody>
               </table>
@@ -571,10 +654,106 @@
     </div>
   </div>
 
+  <!-- Modal: Create Purchase Order (PO) -->
+  <div id="modal-create-po" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3>Record Inbound Purchase Order (PO)</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-create-po').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="create-po-alert" class="alert alert-danger hidden"></div>
+      <form id="create-po-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Supplier / Vendor Name *</label>
+            <input type="text" id="po-supplier" class="form-control" placeholder="e.g. Apex Supplies Ltd" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Purchase Date *</label>
+            <input type="date" id="po-date" class="form-control" required>
+          </div>
+        </div>
+
+        <div style="margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label" style="font-weight: 700;">Purchase Order Line Items</label>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="PurchasesModule.addItemRow()">+ Add Item Row</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap: 8px; padding-bottom: 6px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">
+          <div>Product Listing</div>
+          <div>Quantity</div>
+          <div>Unit Cost (Rs.)</div>
+          <div style="text-align: right;">Subtotal</div>
+          <div></div>
+        </div>
+
+        <div id="po-items-container" style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically inserted rows -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-top: 12px;">
+          <span style="font-weight: 600;">Grand Order Total Cost:</span>
+          <span id="po-grand-total" style="font-size: 1.25rem; font-weight: 700; color: #10b981;">Rs. 0.00</span>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px;">
+          <label class="form-label">Notes & Shipping Reference</label>
+          <input type="text" id="po-notes" class="form-control" placeholder="Batch tracking, airway bill, or invoice notes...">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-create-po').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Purchase Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Purchase Order Details -->
+  <div id="modal-po-details" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <div>
+          <h3>Purchase Order Details</h3>
+          <span id="po-detail-number" style="color: var(--accent-color); font-family: monospace; font-weight: 700;"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-po-details').classList.add('hidden')">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px;">
+        <div><strong>Supplier:</strong> <span id="po-detail-supplier"></span></div>
+        <div><strong>Date:</strong> <span id="po-detail-date"></span></div>
+        <div><strong>Total Cost:</strong> <span id="po-detail-total" style="color: #10b981; font-weight: 700;"></span></div>
+        <div><strong>Recorded By:</strong> <span id="po-detail-recorder"></span></div>
+      </div>
+
+      <div class="data-table-wrapper" style="max-height: 250px; overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Cost</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="po-detail-items-body">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-po-details').classList.add('hidden')">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/owners.js"></script>
   <script src="/js/inventory.js"></script>
+  <script src="/js/purchases.js"></script>
 </body>
 </html>

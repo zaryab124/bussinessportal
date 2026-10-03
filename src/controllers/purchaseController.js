@@ -1,6 +1,7 @@
 const { query, transaction } = require('../config/db');
 const { formatCurrency, add, multiply, divide, toDecimal } = require('../utils/decimal');
 const { logAudit } = require('../utils/auditLogger');
+const { recordPurchaseLedger } = require('../services/ledgerService');
 
 // Generate unique PO reference
 function generatePoNumber() {
@@ -146,6 +147,9 @@ async function createPurchase(req, res) {
       `, [orderTotalCost, purchase.id]);
 
       purchase.total_cost = orderTotalCost;
+      // Record double-entry financial ledger lines for purchase
+      await recordPurchaseLedger(client, purchase, req.user.id);
+
       return purchase;
     });
 

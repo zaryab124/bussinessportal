@@ -1,6 +1,7 @@
 const { query, transaction } = require('../config/db');
 const { formatCurrency, add, subtract, multiply, toDecimal } = require('../utils/decimal');
 const { logAudit } = require('../utils/auditLogger');
+const { recordSaleLedger, reverseSaleLedger } = require('../services/ledgerService');
 
 // Generate unique invoice number: INV-YYYYMMDD-XXXX
 function generateInvoiceNumber() {
@@ -207,6 +208,9 @@ async function createSale(req, res) {
           req.user.id
         ]);
       }
+
+      // 4. Record double-entry financial ledger lines
+      await recordSaleLedger(client, sale, req.user.id);
 
       return {
         ...sale,
@@ -432,6 +436,9 @@ async function cancelSale(req, res) {
         WHERE id = $1
         RETURNING *
       `, [id]);
+
+      // Reverse financial ledger entries traceably
+      await reverseSaleLedger(client, sale, req.user.id, cancellationReason);
 
       return updateSaleRes.rows[0];
     });

@@ -263,6 +263,31 @@ const API = {
       method: 'POST',
       body: JSON.stringify({ cancellationReason })
     });
+  },
+
+  // Financial ledger and profit engine endpoints
+  async getLedgerEntries(params = {}) {
+    const query = new URLSearchParams();
+    if (params.accountCategory) query.append('accountCategory', params.accountCategory);
+    if (params.entryType) query.append('entryType', params.entryType);
+    if (params.referenceType) query.append('referenceType', params.referenceType);
+    if (params.startDate) query.append('startDate', params.startDate);
+    if (params.endDate) query.append('endDate', params.endDate);
+    if (params.limit) query.append('limit', params.limit);
+    if (params.offset) query.append('offset', params.offset);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/ledger${qs}`, { method: 'GET' });
+  },
+
+  async getFinancialSummary() {
+    return this.request('/api/ledger/summary', { method: 'GET' });
+  },
+
+  async recordTraceableAdjustment(data) {
+    return this.request('/api/ledger/adjustment', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };
 

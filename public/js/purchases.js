@@ -53,6 +53,7 @@ const PurchasesModule = {
     document.getElementById('purchases-panel')?.classList.add('hidden');
     document.getElementById('movements-panel')?.classList.add('hidden');
     document.getElementById('sales-panel')?.classList.add('hidden');
+    document.getElementById('reports-panel')?.classList.add('hidden');
   },
 
   showPurchasesView() {

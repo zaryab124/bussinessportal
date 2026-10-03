@@ -371,6 +371,96 @@
             </div>
           </div>
         </div>
+
+        <!-- Financial Reports & Double-Entry Ledger Panel (Phase 7) -->
+        <div id="reports-panel" class="hidden">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Financial Summary & Profit Engine</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Formula-grounded business performance, verified cost of goods sold, expenses, and net profit ledger.</p>
+              </div>
+              <div id="rep-trial-balance"></div>
+            </div>
+
+            <div class="stat-grid" style="margin-bottom: 0;">
+              <div class="stat-card">
+                <div class="stat-label">Gross Sales Revenue</div>
+                <div id="rep-gross-revenue" class="stat-value" style="color: var(--accent-color);">Rs. 0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Cost of Goods Sold (COGS)</div>
+                <div id="rep-cogs" class="stat-value" style="color: var(--text-secondary);">Rs. 0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Gross Profit</div>
+                <div id="rep-gross-profit" class="stat-value text-info">Rs. 0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Business Expenses</div>
+                <div id="rep-expenses" class="stat-value text-warning">Rs. 0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Net Distributable Profit</div>
+                <div id="rep-net-profit" class="stat-value text-success" style="font-size: 1.4rem;">Rs. 0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Inventory Asset Valuation</div>
+                <div id="rep-inv-valuation" class="stat-value text-info" style="font-size: 1.4rem;">Rs. 0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Double-Entry General Ledger</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Chronological audit entries balancing assets, liabilities, equity, revenues, and expenses.</p>
+              </div>
+              <button id="btn-open-traceable-adj" class="btn btn-secondary btn-sm" onclick="LedgerModule.openAdjustmentModal()">
+                + Record Traceable Adjustment
+              </button>
+            </div>
+
+            <!-- Ledger filters -->
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <select id="ledger-filter-category" class="form-control" style="max-width: 180px;">
+                <option value="all">All Account Categories</option>
+                <option value="asset">Assets</option>
+                <option value="liability">Liabilities</option>
+                <option value="equity">Equity</option>
+                <option value="revenue">Revenue</option>
+                <option value="expense">Expenses</option>
+              </select>
+              <select id="ledger-filter-type" class="form-control" style="max-width: 150px;">
+                <option value="all">Debit & Credit</option>
+                <option value="DEBIT">Debit</option>
+                <option value="CREDIT">Credit</option>
+              </select>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Entry #</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Reference</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="ledger-table-body">
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px;">Loading ledger...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Business Owner View Container -->
@@ -997,6 +1087,83 @@
     </div>
   </div>
 
+  <!-- Modal: Record Traceable Ledger Adjustment -->
+  <div id="modal-traceable-adjustment" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Record Traceable Ledger Adjustment</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-traceable-adjustment').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="traceable-adj-alert" class="alert alert-danger hidden"></div>
+      <form id="traceable-adj-form">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">
+          All adjustments must maintain equal Debits and Credits and require an immutable documented justification.
+        </p>
+
+        <div style="background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <h4 style="font-size: 0.85rem; color: var(--accent-color); margin-bottom: 8px;">Primary Leg</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Category</label>
+              <select id="adj-primary-cat" class="form-control">
+                <option value="expense">Expense</option>
+                <option value="revenue">Revenue</option>
+                <option value="asset">Asset</option>
+                <option value="liability">Liability</option>
+                <option value="equity">Equity</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Type</label>
+              <select id="adj-primary-type" class="form-control">
+                <option value="DEBIT">DEBIT</option>
+                <option value="CREDIT">CREDIT</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <h4 style="font-size: 0.85rem; color: #10b981; margin-bottom: 8px;">Balancing Counter Leg</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Category</label>
+              <select id="adj-counter-cat" class="form-control">
+                <option value="asset">Asset</option>
+                <option value="liability">Liability</option>
+                <option value="equity">Equity</option>
+                <option value="revenue">Revenue</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Type</label>
+              <select id="adj-counter-type" class="form-control">
+                <option value="CREDIT">CREDIT</option>
+                <option value="DEBIT">DEBIT</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Adjustment Amount (Rs.) *</label>
+          <input type="number" step="0.01" id="adj-amount" class="form-control" placeholder="0.00" required min="0.01">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Audit Justification & Reason *</label>
+          <textarea id="adj-reason" class="form-control" rows="2" placeholder="Document the exact reason and authority for this financial adjustment..." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-traceable-adjustment').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Post Adjustment Lines</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
@@ -1004,5 +1171,6 @@
   <script src="/js/inventory.js"></script>
   <script src="/js/purchases.js"></script>
   <script src="/js/sales.js"></script>
+  <script src="/js/ledger.js"></script>
 </body>
 </html>

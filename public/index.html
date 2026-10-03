@@ -143,17 +143,51 @@
           </div>
         </div>
 
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Phase 1 Architecture Status</h3>
-          <p style="color: var(--text-secondary); margin-bottom: 16px;">
-            The foundation of the Business Stock, Sales & Profit-Sharing Portal is verified with real PostgreSQL tables, password encryption, and role-based token sessions.
-          </p>
-          <ul style="color: var(--text-secondary); margin-left: 20px; display: flex; flex-direction: column; gap: 8px;">
-            <li><strong>Authentication:</strong> Bcrypt password hashing + signed JWT sessions with auto-invalidation.</li>
-            <li><strong>PostgreSQL Database:</strong> Normalized tables created with foreign keys, indexes, and precision arithmetic types (`NUMERIC(15,2)`).</li>
-            <li><strong>Security:</strong> Express helmet, CORS, rate-limiting on auth endpoints, and centralized audit logging.</li>
-            <li><strong>Next Module:</strong> Phase 2 — Role-based access control and secure owner account management.</li>
-          </ul>
+        <div id="admin-overview-panel">
+          <div class="card">
+            <h3 style="margin-bottom: 12px;">Phase 2: Role-Based Control & Owner Accounts</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">
+              Owner accounts are securely managed with strict isolation, bcrypt credential hashing, status controls, and tamper-resistant audit logs.
+            </p>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-primary" onclick="OwnersModule.showView()">Manage Business Owners</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Owners Management Panel (Phase 2) -->
+        <div id="owners-management-panel" class="hidden">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <div>
+                <h3>Business Owners Directory</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Authorized partner accounts, contact info, and status.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-create-owner').classList.remove('hidden')">
+                + Add Business Owner
+              </button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Partner Name & Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="owners-table-body">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">Loading owners...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -188,8 +222,67 @@
     </main>
   </section>
 
+  <!-- Modal: Create Owner -->
+  <div id="modal-create-owner" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Business Owner</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-create-owner').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="create-owner-alert" class="alert alert-danger hidden"></div>
+      <form id="create-owner-form">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="new-owner-name" class="form-control" placeholder="e.g. Asad Khan" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="new-owner-email" class="form-control" placeholder="partner@business.local" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" id="new-owner-phone" class="form-control" placeholder="+92 300 0000000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Password (Min 8 Characters)</label>
+          <input type="password" id="new-owner-password" class="form-control" placeholder="••••••••" required minlength="8">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-create-owner').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Owner Details -->
+  <div id="modal-edit-owner" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Owner Details</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-edit-owner').classList.add('hidden')">&times;</button>
+      </div>
+      <form onsubmit="OwnersModule.handleUpdateOwner(event)">
+        <input type="hidden" id="edit-owner-id">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="edit-owner-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" id="edit-owner-phone" class="form-control">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-edit-owner').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/owners.js"></script>
 </body>
 </html>

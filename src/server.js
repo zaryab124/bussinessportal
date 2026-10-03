@@ -7,6 +7,7 @@ const { query } = require('./config/db');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -47,6 +48,7 @@ app.get('/api/health', async (req, res) => {
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Fallback to SPA index for web routing
 app.get('*', (req, res, next) => {

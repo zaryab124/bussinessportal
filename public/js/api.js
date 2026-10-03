@@ -96,6 +96,43 @@ const API = {
     } finally {
       this.clearSession();
     }
+  },
+
+  // Owner management endpoints
+  async getOwners() {
+    return this.request('/api/users/owners', { method: 'GET' });
+  },
+
+  async getOwner(id) {
+    return this.request(`/api/users/owners/${id}`, { method: 'GET' });
+  },
+
+  async createOwner(data) {
+    return this.request('/api/users/owners', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async updateOwner(id, data) {
+    return this.request(`/api/users/owners/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async updateOwnerStatus(id, status) {
+    return this.request(`/api/users/owners/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+  },
+
+  async resetOwnerPassword(id, newPassword) {
+    return this.request(`/api/users/owners/${id}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ newPassword })
+    });
   }
 };
 

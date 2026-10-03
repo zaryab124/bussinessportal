@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       ownerView.classList.remove('hidden');
       document.getElementById('role-notice').textContent = `Owner Private Dashboard - Authorized access for ${user.fullName}.`;
     }
+
+    window.dispatchEvent(new CustomEvent('user:authenticated', { detail: user }));
   }
 
   function renderLoggedOut() {

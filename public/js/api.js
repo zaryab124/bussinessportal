@@ -133,6 +133,51 @@ const API = {
       method: 'POST',
       body: JSON.stringify({ newPassword })
     });
+  },
+
+  // Products and inventory endpoints
+  async getProducts(params = {}) {
+    const query = new URLSearchParams();
+    if (params.status) query.append('status', params.status);
+    if (params.category) query.append('category', params.category);
+    if (params.search) query.append('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/products${qs}`, { method: 'GET' });
+  },
+
+  async getProductStats() {
+    return this.request('/api/products/stats', { method: 'GET' });
+  },
+
+  async getProduct(id) {
+    return this.request(`/api/products/${id}`, { method: 'GET' });
+  },
+
+  async createProduct(data) {
+    return this.request('/api/products', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async updateProduct(id, data) {
+    return this.request(`/api/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async adjustStock(id, data) {
+    return this.request(`/api/products/${id}/adjust`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async archiveProduct(id) {
+    return this.request(`/api/products/${id}/archive`, {
+      method: 'DELETE'
+    });
   }
 };
 

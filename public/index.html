@@ -127,30 +127,80 @@
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-label">Total Stock Items</div>
-            <div class="stat-value">1 Listed</div>
+            <div id="kpi-total-items" class="stat-value">--</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Stock In Hand</div>
-            <div class="stat-value">10 Units</div>
+            <div class="stat-label">Available Units In Hand</div>
+            <div id="kpi-total-units" class="stat-value text-info">--</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Active Allocation Rule</div>
-            <div class="stat-value" style="font-size: 1.25rem;">33% / 33% / 34%</div>
+            <div class="stat-label">Total Inventory Valuation</div>
+            <div id="kpi-total-valuation" class="stat-value text-success" style="font-size: 1.4rem;">Rs. 0.00</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Security & Audit</div>
-            <div class="stat-value text-success" style="font-size: 1.25rem;">Encrypted & Logged</div>
+            <div class="stat-label">Low Stock Alerts</div>
+            <div id="kpi-low-stock" class="stat-value text-warning">0 Items</div>
           </div>
         </div>
 
         <div id="admin-overview-panel">
           <div class="card">
-            <h3 style="margin-bottom: 12px;">Phase 2: Role-Based Control & Owner Accounts</h3>
+            <h3 style="margin-bottom: 12px;">Phase 3: Real Stock Management & Live Inventory</h3>
             <p style="color: var(--text-secondary); margin-bottom: 16px;">
-              Owner accounts are securely managed with strict isolation, bcrypt credential hashing, status controls, and tamper-resistant audit logs.
+              Manage inventory with SKU tracking, purchasing costs, selling price ranges, condition, location, supplier records, and traceable adjustments.
             </p>
             <div style="display: flex; gap: 12px;">
-              <button class="btn btn-primary" onclick="OwnersModule.showView()">Manage Business Owners</button>
+              <button class="btn btn-primary" onclick="InventoryModule.showView()">Manage Stock Inventory</button>
+              <button class="btn btn-secondary" onclick="OwnersModule.showView()">Manage Business Owners</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Management Panel (Phase 3) -->
+        <div id="inventory-management-panel" class="hidden">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Stock Inventory Catalog</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Registered goods, costs, expected price ranges, and current available quantities.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-create-product').classList.remove('hidden')">
+                + New Product Listing
+              </button>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <input type="text" id="inventory-search" class="form-control" placeholder="Search by SKU or name..." style="max-width: 280px;">
+              <select id="inventory-filter-status" class="form-control" style="max-width: 180px;">
+                <option value="all">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="Partially Sold">Partially Sold</option>
+                <option value="Sold Out">Sold Out</option>
+                <option value="Draft">Draft</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>SKU & Category</th>
+                    <th>Product & Details</th>
+                    <th>Purchase Cost</th>
+                    <th>Expected Selling Range</th>
+                    <th>In Stock / Purchased</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px;">Loading stock listings...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -280,9 +330,211 @@
     </div>
   </div>
 
+  <!-- Modal: Create Product Listing -->
+  <div id="modal-create-product" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>New Product Stock Listing</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-create-product').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="create-product-alert" class="alert alert-danger hidden"></div>
+      <form id="create-product-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Product SKU *</label>
+            <input type="text" id="new-prod-sku" class="form-control" placeholder="e.g. PROD-SPA-001" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input type="text" id="new-prod-category" class="form-control" placeholder="e.g. Electronics, Trading">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Product Name *</label>
+          <input type="text" id="new-prod-name" class="form-control" placeholder="Full item title" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Purchase Cost Per Unit (Rs.) *</label>
+            <input type="number" step="0.01" id="new-prod-cost" class="form-control" placeholder="1100.00" required min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Quantity Purchased *</label>
+            <input type="number" id="new-prod-qty" class="form-control" placeholder="10" required min="0">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Expected Min Selling Price (Rs.) *</label>
+            <input type="number" step="0.01" id="new-prod-min-price" class="form-control" placeholder="2000.00" required min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expected Max Selling Price (Rs.) *</label>
+            <input type="number" step="0.01" id="new-prod-max-price" class="form-control" placeholder="2500.00" required min="0">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Condition</label>
+            <select id="new-prod-condition" class="form-control">
+              <option value="New">New</option>
+              <option value="Like New">Like New</option>
+              <option value="Refurbished">Refurbished</option>
+              <option value="Used">Used</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Storage Location</label>
+            <input type="text" id="new-prod-location" class="form-control" placeholder="Warehouse Bay 1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier Information</label>
+            <input type="text" id="new-prod-supplier" class="form-control" placeholder="Supplier Company">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description & Notes</label>
+          <textarea id="new-prod-desc" class="form-control" rows="2" placeholder="Specs, condition notes, supplier batch reference..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-create-product').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Product Listing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Product Listing -->
+  <div id="modal-edit-product" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Edit Product Listing</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-edit-product').classList.add('hidden')">&times;</button>
+      </div>
+      <form id="edit-product-form">
+        <input type="hidden" id="edit-prod-id">
+        <div style="margin-bottom: 12px; font-weight: 700; color: var(--accent-color);">
+          SKU: <span id="edit-prod-sku-display"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="edit-prod-name" class="form-control" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input type="text" id="edit-prod-category" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Condition</label>
+            <select id="edit-prod-condition" class="form-control">
+              <option value="New">New</option>
+              <option value="Like New">Like New</option>
+              <option value="Refurbished">Refurbished</option>
+              <option value="Used">Used</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Min Selling Price (Rs.)</label>
+            <input type="number" step="0.01" id="edit-prod-min-price" class="form-control" required min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Selling Price (Rs.)</label>
+            <input type="number" step="0.01" id="edit-prod-max-price" class="form-control" required min="0">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" id="edit-prod-location" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier</label>
+            <input type="text" id="edit-prod-supplier" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Listing Status</label>
+          <select id="edit-prod-status" class="form-control">
+            <option value="Available">Available</option>
+            <option value="Partially Sold">Partially Sold</option>
+            <option value="Sold Out">Sold Out</option>
+            <option value="Draft">Draft</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="edit-prod-desc" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-edit-product').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Listing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Adjust Stock (Traceable) -->
+  <div id="modal-adjust-stock" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Traceable Stock Adjustment</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-adjust-stock').classList.add('hidden')">&times;</button>
+      </div>
+      <form id="adjust-stock-form">
+        <input type="hidden" id="adjust-prod-id">
+        <div style="margin-bottom: 12px;">
+          <strong>Product:</strong> <span id="adjust-prod-name-display"></span><br>
+          <strong>Current In Hand:</strong> <span id="adjust-prod-available-display" style="color: #60a5fa; font-weight: 700;"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Adjustment Type</label>
+          <select id="adjust-type" class="form-control" required>
+            <option value="adjustment_add">Add Stock (Found inventory / Restock addition)</option>
+            <option value="adjustment_subtract">Deduct Stock (Count variance / Shrinkage)</option>
+            <option value="damage_loss">Damage / Loss Write-Off</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantity to Adjust (Units)</label>
+          <input type="number" id="adjust-qty" class="form-control" placeholder="1" required min="1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Documented Reason (Audit Required) *</label>
+          <textarea id="adjust-reason" class="form-control" rows="2" placeholder="Document the exact audit reason for this inventory adjustment..." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-adjust-stock').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Record Adjustment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/owners.js"></script>
+  <script src="/js/inventory.js"></script>
 </body>
 </html>

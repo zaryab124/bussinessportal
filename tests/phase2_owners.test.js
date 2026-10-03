@@ -21,6 +21,10 @@ test.before(async () => {
     });
   });
 
+  // Clean up any test users from prior runs
+  await query("DELETE FROM audit_logs WHERE entity_type = 'users' AND entity_id IN (SELECT id::text FROM users WHERE email LIKE 'newowner%')");
+  await query("DELETE FROM users WHERE email LIKE 'newowner%' OR email LIKE 'test%'");
+
   // Log in as Super Admin
   const adminRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',

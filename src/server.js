@@ -8,6 +8,7 @@ const { query } = require('./config/db');
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.get('/api/health', async (req, res) => {
 // Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
 
 // Fallback to SPA index for web routing
 app.get('*', (req, res, next) => {

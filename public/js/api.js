@@ -178,6 +178,39 @@ const API = {
     return this.request(`/api/products/${id}/archive`, {
       method: 'DELETE'
     });
+  },
+
+  // Product media endpoints
+  async getProductMedia(productId) {
+    return this.request(`/api/products/${productId}/media`, { method: 'GET' });
+  },
+
+  async uploadProductMedia(productId, formData) {
+    const token = this.getToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/api/products/${productId}/media`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Upload failed');
+    return data;
+  },
+
+  async setPrimaryMedia(productId, mediaId) {
+    return this.request(`/api/products/${productId}/media/${mediaId}/primary`, {
+      method: 'PATCH'
+    });
+  },
+
+  async deleteProductMedia(productId, mediaId) {
+    return this.request(`/api/products/${productId}/media/${mediaId}`, {
+      method: 'DELETE'
+    });
   }
 };
 

@@ -527,7 +527,47 @@
           <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-adjust-stock').classList.add('hidden')">Cancel</button>
           <button type="submit" class="btn btn-primary">Record Adjustment</button>
         </div>
-      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Product Media Gallery (Images & Videos) -->
+  <div id="modal-product-media" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <div>
+          <h3>Product Media Gallery</h3>
+          <small style="color: var(--text-secondary);" id="media-prod-name-display"></small>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-product-media').classList.add('hidden')">&times;</button>
+      </div>
+
+      <input type="hidden" id="media-product-id">
+
+      <!-- Admin Upload Section -->
+      <div id="media-upload-section" class="card" style="padding: 16px; margin-bottom: 16px; background-color: rgba(15, 23, 42, 0.5);">
+        <div id="media-upload-alert" class="alert alert-danger hidden"></div>
+        <form onsubmit="InventoryModule.handleUploadMedia(event)">
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <input type="file" id="media-file-input" class="form-control" multiple accept="image/*,video/*" style="flex: 1;">
+            <button type="submit" class="btn btn-primary btn-sm">Upload Media</button>
+          </div>
+          <small style="color: var(--text-muted); display: block; margin-top: 6px;">
+            Supports multiple JPEG, PNG, WEBP, GIF images (up to 10MB) and MP4, WEBM videos (up to 50MB).
+          </small>
+        </form>
+      </div>
+
+      <!-- Media Grid Display -->
+      <div>
+        <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">Uploaded Photos & Videos</h4>
+        <div id="media-gallery-grid" class="media-grid" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-product-media').classList.add('hidden')">Close Gallery</button>
+      </div>
     </div>
   </div>
 

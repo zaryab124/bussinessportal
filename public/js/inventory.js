@@ -139,11 +139,14 @@ const InventoryModule = {
 
       const actions = isAdmin ? `
         <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-sm" onclick="InventoryModule.openMedia(${p.id})">Media</button>
           <button class="btn btn-secondary btn-sm" onclick="InventoryModule.openEdit(${p.id})">Edit</button>
           <button class="btn btn-secondary btn-sm" onclick="InventoryModule.openAdjust(${p.id})">Adjust</button>
           ${p.status !== 'Archived' ? `<button class="btn btn-secondary btn-sm" onclick="InventoryModule.archive(${p.id})">Archive</button>` : ''}
         </div>
-      ` : '<span style="color: var(--text-muted); font-size: 0.8rem;">Read Only</span>';
+      ` : `
+        <button class="btn btn-secondary btn-sm" onclick="InventoryModule.openMedia(${p.id})">View Media</button>
+      `;
 
       return `
         <tr>
@@ -318,6 +321,130 @@ const InventoryModule = {
       await this.loadProducts();
     } catch (err) {
       alert(`Archive error: ${err.message}`);
+    }
+  },
+
+  // Media Gallery Management
+  async openMedia(productId) {
+    const p = this.products.find(item => item.id === productId);
+    if (!p) return;
+
+    const modal = document.getElementById('modal-product-media');
+    document.getElementById('media-product-id').value = p.id;
+    document.getElementById('media-prod-name-display').textContent = `${p.name} (${p.sku})`;
+
+    const uploadArea = document.getElementById('media-upload-section');
+    const user = API.getUser();
+    if (user && user.role === 'super_admin') {
+      uploadArea?.classList.remove('hidden');
+    } else {
+      uploadArea?.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+    await this.loadMedia(productId);
+  },
+
+  async loadMedia(productId) {
+    const grid = document.getElementById('media-gallery-grid');
+    if (!grid) return;
+
+    grid.innerHTML = '<div style="color: var(--text-muted); padding: 12px;">Loading media...</div>';
+
+    try {
+      const res = await API.getProductMedia(productId);
+      const mediaList = res.media || [];
+
+      if (mediaList.length === 0) {
+        grid.innerHTML = '<div style="color: var(--text-muted); padding: 12px;">No images or videos uploaded yet.</div>';
+        return;
+      }
+
+      const user = API.getUser();
+      const isAdmin = user && user.role === 'super_admin';
+
+      grid.innerHTML = mediaList.map(m => {
+        const isVid = m.media_type === 'video';
+        const primaryBadge = m.is_primary ? '<span class="media-badge-primary">SHOWCASE</span>' : '';
+
+        const mediaElement = isVid
+          ? `<video src="${m.file_url}" controls class="media-thumb"></video>`
+          : `<img src="${m.file_url}" alt="${m.file_name}" class="media-thumb" onclick="window.open('${m.file_url}', '_blank')">`;
+
+        const actionBtns = isAdmin ? `
+          <div class="media-actions">
+            ${!isVid && !m.is_primary ? `<button class="btn btn-secondary btn-sm" style="font-size: 0.65rem; padding: 2px 6px;" onclick="InventoryModule.setPrimary(${productId}, ${m.id})">Set Showcase</button>` : '<span></span>'}
+            <button class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 2px 6px;" onclick="InventoryModule.deleteMedia(${productId}, ${m.id})">&times;</button>
+          </div>
+        ` : '';
+
+        return `
+          <div class="media-card">
+            ${primaryBadge}
+            ${mediaElement}
+            <div style="padding: 4px 6px; font-size: 0.7rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${m.file_name}
+            </div>
+            ${actionBtns}
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      grid.innerHTML = `<div style="color: var(--danger-color); padding: 12px;">Error: ${err.message}</div>`;
+    }
+  },
+
+  async handleUploadMedia(event) {
+    event.preventDefault();
+    const productId = document.getElementById('media-product-id').value;
+    const fileInput = document.getElementById('media-file-input');
+    const alertEl = document.getElementById('media-upload-alert');
+    alertEl.classList.add('hidden');
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alertEl.textContent = 'Please choose at least one photo or video file.';
+      alertEl.classList.remove('hidden');
+      return;
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < fileInput.files.length; i++) {
+      formData.append('files', fileInput.files[i]);
+    }
+
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+
+    try {
+      await API.uploadProductMedia(productId, formData);
+      fileInput.value = '';
+      await this.loadMedia(productId);
+    } catch (err) {
+      alertEl.textContent = err.message || 'Upload error.';
+      alertEl.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Upload Media';
+    }
+  },
+
+  async setPrimary(productId, mediaId) {
+    try {
+      await API.setPrimaryMedia(productId, mediaId);
+      await this.loadMedia(productId);
+    } catch (err) {
+      alert(`Error setting showcase image: ${err.message}`);
+    }
+  },
+
+  async deleteMedia(productId, mediaId) {
+    if (!confirm('Are you sure you want to delete this media item?')) return;
+    try {
+      await API.deleteProductMedia(productId, mediaId);
+      await this.loadMedia(productId);
+    } catch (err) {
+      alert(`Error deleting media: ${err.message}`);
     }
   }
 };

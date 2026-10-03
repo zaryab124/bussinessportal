@@ -43,6 +43,10 @@ const OwnersModule = {
     document.getElementById('nav-owners')?.classList.add('active');
     
     document.getElementById('admin-overview-panel')?.classList.add('hidden');
+    document.getElementById('inventory-management-panel')?.classList.add('hidden');
+    document.getElementById('purchases-panel')?.classList.add('hidden');
+    document.getElementById('movements-panel')?.classList.add('hidden');
+    document.getElementById('sales-panel')?.classList.add('hidden');
     document.getElementById('owners-management-panel')?.classList.remove('hidden');
     this.loadOwners();
   },

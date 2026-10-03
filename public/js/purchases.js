@@ -52,6 +52,7 @@ const PurchasesModule = {
     document.getElementById('inventory-management-panel')?.classList.add('hidden');
     document.getElementById('purchases-panel')?.classList.add('hidden');
     document.getElementById('movements-panel')?.classList.add('hidden');
+    document.getElementById('sales-panel')?.classList.add('hidden');
   },
 
   showPurchasesView() {

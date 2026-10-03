@@ -11,6 +11,7 @@ const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const purchaseRoutes = require('./routes/purchaseRoutes');
+const saleRoutes = require('./routes/saleRoutes');
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/products', mediaRoutes);
 app.use('/api/purchases', purchaseRoutes);
+app.use('/api/sales', saleRoutes);
 
 // Fallback to SPA index for web routing
 app.get('*', (req, res, next) => {

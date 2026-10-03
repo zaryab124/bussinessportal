@@ -236,6 +236,33 @@ const API = {
     if (params.limit) query.append('limit', params.limit);
     const qs = query.toString() ? `?${query.toString()}` : '';
     return this.request(`/api/purchases/movements/all${qs}`, { method: 'GET' });
+  },
+
+  // Sales endpoints
+  async getSales(params = {}) {
+    const query = new URLSearchParams();
+    if (params.status) query.append('status', params.status);
+    if (params.paymentStatus) query.append('paymentStatus', params.paymentStatus);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/sales${qs}`, { method: 'GET' });
+  },
+
+  async getSale(id) {
+    return this.request(`/api/sales/${id}`, { method: 'GET' });
+  },
+
+  async createSale(data) {
+    return this.request('/api/sales', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async cancelSale(id, cancellationReason) {
+    return this.request(`/api/sales/${id}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ cancellationReason })
+    });
   }
 };
 

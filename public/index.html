@@ -320,6 +320,55 @@
                 </tbody>
               </table>
             </div>
+        <!-- Sales Register Panel (Phase 6) -->
+        <div id="sales-panel" class="hidden">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Sales & Invoicing Register</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Confirmed customer sales transactions, revenue, COGS, direct expenses, and net profit ledger.</p>
+              </div>
+              <button id="btn-open-new-sale" class="btn btn-primary btn-sm" onclick="SalesModule.openNewSaleModal()">
+                + Record Confirmed Sale
+              </button>
+            </div>
+
+            <!-- Filters -->
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <select id="sales-filter-status" class="form-control" style="max-width: 180px;">
+                <option value="all">All Sale Statuses</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select id="sales-filter-pay-status" class="form-control" style="max-width: 180px;">
+                <option value="all">All Payment Statuses</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Customer Ref</th>
+                    <th>Revenue</th>
+                    <th>COGS</th>
+                    <th>Net Profit</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sales-table-body">
+                  <tr>
+                    <td colspan="8" style="text-align: center; padding: 20px;">Loading sales...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -749,11 +798,211 @@
     </div>
   </div>
 
+  <!-- Modal: Record Confirmed Sale -->
+  <div id="modal-create-sale" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3>Record Confirmed Sale</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-create-sale').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="create-sale-alert" class="alert alert-danger hidden"></div>
+      <form id="create-sale-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Invoice Number</label>
+            <input type="text" id="sale-invoice-number" class="form-control" placeholder="Auto-generated if blank">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sale Date *</label>
+            <input type="date" id="sale-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Customer / Reference</label>
+            <input type="text" id="sale-customer" class="form-control" placeholder="Customer name or ref">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select id="sale-payment-method" class="form-control">
+              <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cheque">Cheque</option>
+              <option value="online">Online / UPI / Card</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Status</label>
+            <select id="sale-payment-status" class="form-control">
+              <option value="paid">Paid (Settled)</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Direct Sale Expenses (Rs.)</label>
+            <input type="number" step="0.01" id="sale-direct-expenses" class="form-control" placeholder="0.00" value="0.00" min="0">
+          </div>
+        </div>
+
+        <div style="margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label" style="font-weight: 700;">Sold Products (Line Items)</label>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="SalesModule.addItemRow()">+ Add Item</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 40px; gap: 8px; padding-bottom: 6px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">
+          <div>Product & Price Range</div>
+          <div>Quantity</div>
+          <div>Selling Price (Rs.)</div>
+          <div style="text-align: right;">Subtotal</div>
+          <div></div>
+        </div>
+
+        <div id="sale-items-container" style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically inserted rows -->
+        </div>
+
+        <!-- Price Override Alert & Authorization Box -->
+        <div id="sale-override-group" class="hidden" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); padding: 12px; border-radius: 6px; margin-top: 12px;">
+          <div style="color: #f59e0b; font-weight: 700; margin-bottom: 6px;">
+            ⚠️ Price Range Override Required
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
+            One or more items are priced outside their configured minimum/maximum selling range. Super Admin approval and a documented reason are mandatory.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" id="sale-override-check" style="width: 18px; height: 18px;">
+            <label for="sale-override-check" style="font-size: 0.9rem; font-weight: 600;">Authorized Price Override Approved</label>
+          </div>
+          <textarea id="sale-override-reason" class="form-control" rows="2" placeholder="Document the reason for overriding the configured selling price range..."></textarea>
+        </div>
+
+        <!-- Real-Time Calculation Ledger Summary -->
+        <div style="background: rgba(0,0,0,0.3); border-radius: 6px; padding: 12px; margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; text-align: center;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Gross Revenue</div>
+            <div id="sale-calc-revenue" style="font-weight: 700; font-size: 1.1rem; color: var(--accent-color);">Rs. 0.00</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Cost of Goods (COGS)</div>
+            <div id="sale-calc-cogs" style="font-weight: 700; font-size: 1.1rem; color: var(--text-secondary);">Rs. 0.00</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Direct Expenses</div>
+            <div id="sale-calc-expenses" style="font-weight: 700; font-size: 1.1rem; color: #f59e0b;">Rs. 0.00</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Net Distributable Profit</div>
+            <div id="sale-calc-net-profit" style="font-weight: 700; font-size: 1.1rem; color: #10b981;">Rs. 0.00</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-create-sale').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm & Register Sale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Sale Details & Invoice View -->
+  <div id="modal-sale-details" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <div>
+          <h3>Sale Transaction Invoice</h3>
+          <span id="sale-detail-invoice" style="color: var(--accent-color); font-family: monospace; font-weight: 700;"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-sale-details').classList.add('hidden')">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px;">
+        <div><strong>Date:</strong> <span id="sale-detail-date"></span></div>
+        <div><strong>Customer:</strong> <span id="sale-detail-customer"></span></div>
+        <div><strong>Payment:</strong> <span id="sale-detail-payment"></span></div>
+        <div><strong>Recorded By:</strong> <span id="sale-detail-recorder"></span></div>
+      </div>
+
+      <div id="sale-detail-override-info" class="alert alert-warning hidden" style="margin-bottom: 12px;"></div>
+
+      <div class="data-table-wrapper" style="max-height: 220px; overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Selling Price</th>
+              <th>Revenue</th>
+              <th>Profit</th>
+            </tr>
+          </thead>
+          <tbody id="sale-detail-items-body"></tbody>
+        </table>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); border-radius: 6px; padding: 12px; margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; text-align: center;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Revenue</div>
+          <div id="sale-detail-revenue" style="font-weight: 700; color: var(--accent-color);"></div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">COGS</div>
+          <div id="sale-detail-cogs" style="font-weight: 700; color: var(--text-secondary);"></div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Direct Expenses</div>
+          <div id="sale-detail-expenses" style="font-weight: 700; color: #f59e0b;"></div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Net Profit</div>
+          <div id="sale-detail-profit" style="font-weight: 700; color: #10b981;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-sale-details').classList.add('hidden')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cancel Sale -->
+  <div id="modal-cancel-sale" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="color: var(--danger-color);">Cancel Sale Transaction</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-cancel-sale').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="cancel-sale-alert" class="alert alert-danger hidden"></div>
+      <form id="cancel-sale-form">
+        <input type="hidden" id="cancel-sale-id">
+        <p style="margin-bottom: 12px; font-size: 0.9rem;">
+          Are you sure you want to cancel invoice <strong id="cancel-sale-invoice-label" style="font-family: monospace;"></strong>?
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">
+          Cancelling will automatically restore sold stock quantities to inventory and record traceable 'sale_return_in' movements.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Documented Cancellation Reason *</label>
+          <textarea id="cancel-sale-reason" class="form-control" rows="3" placeholder="Reason for cancellation / customer return..." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-cancel-sale').classList.add('hidden')">Keep Active</button>
+          <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/owners.js"></script>
   <script src="/js/inventory.js"></script>
   <script src="/js/purchases.js"></script>
+  <script src="/js/sales.js"></script>
 </body>
 </html>

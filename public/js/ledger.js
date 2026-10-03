@@ -55,6 +55,7 @@ const LedgerModule = {
     document.getElementById('movements-panel')?.classList.add('hidden');
     document.getElementById('sales-panel')?.classList.add('hidden');
     document.getElementById('reports-panel')?.classList.add('hidden');
+    document.getElementById('profit-panel')?.classList.add('hidden');
   },
 
   showReportsView() {

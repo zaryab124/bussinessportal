@@ -2,6 +2,7 @@ const { query, transaction } = require('../config/db');
 const { formatCurrency, add, subtract, multiply, toDecimal } = require('../utils/decimal');
 const { logAudit } = require('../utils/auditLogger');
 const { recordSaleLedger, reverseSaleLedger } = require('../services/ledgerService');
+const { allocateSaleProfit, reverseSaleProfitAllocations } = require('../services/profitEngine');
 
 // Generate unique invoice number: INV-YYYYMMDD-XXXX
 function generateInvoiceNumber() {
@@ -212,9 +213,13 @@ async function createSale(req, res) {
       // 4. Record double-entry financial ledger lines
       await recordSaleLedger(client, sale, req.user.id);
 
+      // 5. Automatically allocate net profit to owners and brand reinvestment
+      const allocations = await allocateSaleProfit(client, sale.id, sale.net_profit, req.user.id);
+
       return {
         ...sale,
-        items: verifiedItems
+        items: verifiedItems,
+        allocations
       };
     });
 
@@ -439,6 +444,9 @@ async function cancelSale(req, res) {
 
       // Reverse financial ledger entries traceably
       await reverseSaleLedger(client, sale, req.user.id, cancellationReason);
+
+      // Reverse profit allocations
+      await reverseSaleProfitAllocations(client, sale.id);
 
       return updateSaleRes.rows[0];
     });

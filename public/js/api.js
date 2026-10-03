@@ -288,6 +288,35 @@ const API = {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  },
+
+  // Profit sharing and reinvestment rules endpoints
+  async getActiveProfitRule() {
+    return this.request('/api/profit/rules/active', { method: 'GET' });
+  },
+
+  async getProfitRulesHistory() {
+    return this.request('/api/profit/rules/history', { method: 'GET' });
+  },
+
+  async createProfitRule(data) {
+    return this.request('/api/profit/rules', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async getProfitAllocations(params = {}) {
+    const query = new URLSearchParams();
+    if (params.ownerId) query.append('ownerId', params.ownerId);
+    if (params.allocationType) query.append('allocationType', params.allocationType);
+    if (params.periodMonth) query.append('periodMonth', params.periodMonth);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/profit/allocations${qs}`, { method: 'GET' });
+  },
+
+  async getReinvestmentReserves() {
+    return this.request('/api/profit/reinvestment', { method: 'GET' });
   }
 };
 

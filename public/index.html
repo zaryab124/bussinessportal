@@ -461,6 +461,76 @@
             </div>
           </div>
         </div>
+
+        <!-- Profit Sharing & Reinvestment Panel (Phase 8) -->
+        <div id="profit-panel" class="hidden">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Profit-Sharing Rules & Policy</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Active distribution policy dividing net profits between business partners and the brand reinvestment fund.</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="rule-display-version" class="badge" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd;">Version 1</span>
+                <button id="btn-open-config-rule" class="btn btn-primary btn-sm" onclick="ProfitModule.openConfigRuleModal()">
+                  + Configure New Rule Version
+                </button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; flex-wrap: wrap;">
+              <div style="background: rgba(0,0,0,0.2); border-radius: 6px; padding: 14px;">
+                <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">Partner Ownership Allocations</h4>
+                <div id="rule-display-owners-list" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamically inserted owners -->
+                </div>
+              </div>
+
+              <div style="background: rgba(0,0,0,0.2); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Brand Reinvestment Reserve</div>
+                <div id="rule-display-reinv" style="font-size: 1.8rem; font-weight: 700; color: #f59e0b; margin: 4px 0;">34.00%</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Cumulative Retained Pool:</div>
+                <div id="profit-reinv-pool" style="font-size: 1.15rem; font-weight: 700; color: #10b981; margin-top: 2px;">Rs. 0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3>Net Profit Allocation History</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Traceable distribution of net profit generated from confirmed business sales.</p>
+              </div>
+              <div>
+                <select id="profit-filter-type" class="form-control" style="max-width: 200px;">
+                  <option value="all">All Allocation Types</option>
+                  <option value="owner_share">Partner Share</option>
+                  <option value="brand_reinvestment">Brand Reinvestment</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Reference / Sale</th>
+                    <th>Date</th>
+                    <th>Recipient</th>
+                    <th>Type</th>
+                    <th>Allocated Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="allocations-table-body">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">Loading allocations...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Business Owner View Container -->
@@ -1164,6 +1234,62 @@
     </div>
   </div>
 
+  <!-- Modal: Configure New Profit Allocation Rule -->
+  <div id="modal-configure-profit-rule" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Configure Profit Allocation Rule</h3>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-configure-profit-rule').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="config-rule-alert" class="alert alert-danger hidden"></div>
+      <form id="config-rule-form">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">
+          Activating a new rule increments the version number, preserves immutable audit history, and applies prospectively to confirmed sales.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Rule Policy Name *</label>
+          <input type="text" id="rule-name-input" class="form-control" required>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <h4 style="font-size: 0.85rem; color: var(--accent-color); margin-bottom: 10px;">Partner Ownership Splits</h4>
+          <div id="rule-owners-inputs-container">
+            <!-- Dynamically populated owner inputs -->
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #f59e0b;">Brand Reinvestment Fund</strong>
+              <small style="color: var(--text-muted); display: block;">Retained reserve for business growth</small>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; max-width: 120px;">
+              <input type="number" step="0.01" min="0" max="100" id="rule-reinvestment-input" class="form-control" value="34.00" required>
+              <span style="font-weight: 600;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-bottom: 14px;">
+          <span style="font-weight: 600; font-size: 0.9rem;">Total Configured Percentage:</span>
+          <span id="rule-sum-display" style="font-size: 1.2rem; font-weight: 700; color: #10b981;">100.00%</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Policy Documentation / Notes</label>
+          <textarea id="rule-notes-input" class="form-control" rows="2" placeholder="Agreed board resolution, partnership terms..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-configure-profit-rule').classList.add('hidden')">Cancel</button>
+          <button type="submit" id="btn-submit-rule" class="btn btn-primary">Activate Rule Version</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Client scripts -->
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
@@ -1172,5 +1298,6 @@
   <script src="/js/purchases.js"></script>
   <script src="/js/sales.js"></script>
   <script src="/js/ledger.js"></script>
+  <script src="/js/profit.js"></script>
 </body>
 </html>

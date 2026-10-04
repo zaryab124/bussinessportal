@@ -177,9 +177,14 @@
                 <h3>Stock Inventory Catalog</h3>
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Registered goods, costs, expected price ranges, and current available quantities.</p>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-create-product').classList.remove('hidden')">
-                + New Product Listing
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/products', 'inventory-products.csv')">
+                  📥 Export CSV
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-create-product').classList.remove('hidden')">
+                  + New Product Listing
+                </button>
+              </div>
             </div>
 
             <!-- Filters & Search Toolbar -->
@@ -261,9 +266,14 @@
                 <h3>Stock Purchases & Supply Orders</h3>
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Inbound vendor shipments, batch receipts, and weighted moving average cost calculations.</p>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="PurchasesModule.openNewPurchaseModal()">
-                + New Purchase Order (PO)
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/purchases', 'purchases-report.csv')">
+                  📥 Export CSV
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="PurchasesModule.openNewPurchaseModal()">
+                  + New Purchase Order (PO)
+                </button>
+              </div>
             </div>
 
             <div class="data-table-wrapper">
@@ -335,9 +345,14 @@
                 <h3>Sales & Invoicing Register</h3>
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Confirmed customer sales transactions, revenue, COGS, direct expenses, and net profit ledger.</p>
               </div>
-              <button id="btn-open-new-sale" class="btn btn-primary btn-sm" onclick="SalesModule.openNewSaleModal()">
-                + Record Confirmed Sale
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/sales', 'sales-report.csv')">
+                  📥 Export CSV
+                </button>
+                <button id="btn-open-new-sale" class="btn btn-primary btn-sm" onclick="SalesModule.openNewSaleModal()">
+                  + Record Confirmed Sale
+                </button>
+              </div>
             </div>
 
             <!-- Filters -->
@@ -424,9 +439,14 @@
                 <h3>Double-Entry General Ledger</h3>
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Chronological audit entries balancing assets, liabilities, equity, revenues, and expenses.</p>
               </div>
-              <button id="btn-open-traceable-adj" class="btn btn-secondary btn-sm" onclick="LedgerModule.openAdjustmentModal()">
-                + Record Traceable Adjustment
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/ledger', 'financial-ledger.csv')">
+                  📥 Export CSV
+                </button>
+                <button id="btn-open-traceable-adj" class="btn btn-secondary btn-sm" onclick="LedgerModule.openAdjustmentModal()">
+                  + Record Traceable Adjustment
+                </button>
+              </div>
             </div>
 
             <!-- Ledger filters -->
@@ -566,9 +586,14 @@
                 <h3>Operating Expenses Ledger</h3>
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Traceable business expenses with automated double-entry ledger debiting.</p>
               </div>
-              <button id="btn-open-create-expense" class="btn btn-primary btn-sm" onclick="ExpensesModule.openCreateModal()">
-                + Record Expense
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/expenses', 'operating-expenses.csv')">
+                  📥 Export CSV
+                </button>
+                <button id="btn-open-create-expense" class="btn btn-primary btn-sm" onclick="ExpensesModule.openCreateModal()">
+                  + Record Expense
+                </button>
+              </div>
             </div>
 
             <div class="filters-bar" style="margin-bottom: 16px;">
@@ -637,6 +662,9 @@
                 <p style="color: var(--text-secondary); font-size: 0.85rem;">Outstanding profit balances, settlements disbursed, and capital contributions.</p>
               </div>
               <div id="settlement-admin-actions" style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/settlements', 'owner-settlements.csv')">
+                  📥 Export CSV
+                </button>
                 <button class="btn btn-secondary btn-sm" onclick="SettlementsModule.openInvestmentModal()">
                   + Contributed Capital
                 </button>
@@ -787,6 +815,14 @@
 
       <!-- Business Owner View Container -->
       <div id="owner-view" class="hidden">
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 16px;">
+          <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/owner/allocations', 'my-profit-allocations.csv')">
+            📥 Export My Profit Allocations (CSV)
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="API.downloadExport('/api/export/owner/settlements', 'my-settlements.csv')">
+            📥 Export My Payouts (CSV)
+          </button>
+        </div>
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-label">Your Profit Share %</div>

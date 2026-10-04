@@ -19,6 +19,7 @@ const expenseRoutes = require('./routes/expenseRoutes');
 const settlementRoutes = require('./routes/settlementRoutes');
 const investmentRoutes = require('./routes/investmentRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+const exportRoutes = require('./routes/exportRoutes');
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/export', exportRoutes);
 
 // Fallback to SPA index for web routing
 app.get('*', (req, res, next) => {

@@ -406,6 +406,27 @@ const API = {
 
   async getAuditSummary() {
     return this.request('/api/audit-logs/summary', { method: 'GET' });
+  },
+
+  // Export endpoints
+  async downloadExport(endpoint, defaultFilename = 'export.csv') {
+    const token = this.getToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(endpoint, { headers });
+    if (!res.ok) {
+      throw new Error(`Export failed with HTTP ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultFilename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
   }
 };
 

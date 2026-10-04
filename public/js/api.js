@@ -326,6 +326,86 @@ const API = {
 
   async getOwnerDashboard() {
     return this.request('/api/dashboard/owner', { method: 'GET' });
+  },
+
+  // Operating Expenses endpoints
+  async getExpenses(params = {}) {
+    const query = new URLSearchParams();
+    if (params.category) query.append('category', params.category);
+    if (params.startDate) query.append('startDate', params.startDate);
+    if (params.endDate) query.append('endDate', params.endDate);
+    if (params.search) query.append('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/expenses${qs}`, { method: 'GET' });
+  },
+
+  async createExpense(data) {
+    return this.request('/api/expenses', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async deleteExpense(id, reason) {
+    return this.request(`/api/expenses/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ reason })
+    });
+  },
+
+  // Owner Settlements (Payouts) endpoints
+  async getSettlements(params = {}) {
+    const query = new URLSearchParams();
+    if (params.owner_id) query.append('owner_id', params.owner_id);
+    if (params.startDate) query.append('startDate', params.startDate);
+    if (params.endDate) query.append('endDate', params.endDate);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/settlements${qs}`, { method: 'GET' });
+  },
+
+  async getOwnerBalances() {
+    return this.request('/api/settlements/balances', { method: 'GET' });
+  },
+
+  async createSettlement(data) {
+    return this.request('/api/settlements', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Owner Capital Investments endpoints
+  async getInvestments(params = {}) {
+    const query = new URLSearchParams();
+    if (params.owner_id) query.append('owner_id', params.owner_id);
+    if (params.type) query.append('type', params.type);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/investments${qs}`, { method: 'GET' });
+  },
+
+  async createInvestment(data) {
+    return this.request('/api/investments', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Audit Logs endpoints (Super Admin)
+  async getAuditLogs(params = {}) {
+    const query = new URLSearchParams();
+    if (params.action) query.append('action', params.action);
+    if (params.entityType) query.append('entityType', params.entityType);
+    if (params.userId) query.append('userId', params.userId);
+    if (params.startDate) query.append('startDate', params.startDate);
+    if (params.endDate) query.append('endDate', params.endDate);
+    if (params.limit) query.append('limit', params.limit);
+    if (params.offset) query.append('offset', params.offset);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request(`/api/audit-logs${qs}`, { method: 'GET' });
+  },
+
+  async getAuditSummary() {
+    return this.request('/api/audit-logs/summary', { method: 'GET' });
   }
 };
 

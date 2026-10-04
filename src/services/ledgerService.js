@@ -286,6 +286,120 @@ async function recordPurchaseLedger(client, purchase, recordedBy) {
 }
 
 /**
+ * Record balanced double-entry lines for an operating expense:
+ * DEBIT Expense (Operating Expense) & CREDIT Asset (Cash / Bank)
+ */
+async function recordExpenseLedger(client, expense, recordedBy) {
+  const lines = [];
+  const expId = expense.id;
+  const expCode = expense.expense_code || `EXP-${expId}`;
+  const expDate = expense.expense_date ? new Date(expense.expense_date).toISOString() : new Date().toISOString();
+
+  if (toDecimal(expense.amount).greaterThan(0)) {
+    // Debit Expense (Operating Expense Account)
+    lines.push(await postLedgerLine(client, {
+      entryDate: expDate,
+      accountCategory: 'expense',
+      entryType: 'DEBIT',
+      amount: expense.amount,
+      referenceType: 'expense',
+      referenceId: expId,
+      description: `Operating expense (${expense.category}): ${expense.description || expCode}`,
+      recordedBy
+    }));
+
+    // Credit Asset (Cash Outflow)
+    lines.push(await postLedgerLine(client, {
+      entryDate: expDate,
+      accountCategory: 'asset',
+      entryType: 'CREDIT',
+      amount: expense.amount,
+      referenceType: 'expense',
+      referenceId: expId,
+      description: `Cash outflow for operating expense ${expCode}`,
+      recordedBy
+    }));
+  }
+
+  return lines;
+}
+
+/**
+ * Record balanced double-entry lines for an owner profit settlement payout:
+ * DEBIT Distribution (Owner Profit Payout) & CREDIT Asset (Cash / Bank)
+ */
+async function recordSettlementLedger(client, settlement, recordedBy) {
+  const lines = [];
+  const setCode = settlement.settlement_code || `SET-${settlement.id}`;
+  const setDate = settlement.settlement_date ? new Date(settlement.settlement_date).toISOString() : new Date().toISOString();
+
+  if (toDecimal(settlement.amount).greaterThan(0)) {
+    // Debit Distribution (Equity/Profit Distribution)
+    lines.push(await postLedgerLine(client, {
+      entryDate: setDate,
+      accountCategory: 'distribution',
+      entryType: 'DEBIT',
+      amount: settlement.amount,
+      referenceType: 'settlement',
+      referenceId: settlement.id,
+      description: `Profit distribution payout to owner ${settlement.owner_id} (${setCode}) via ${settlement.payment_method}`,
+      recordedBy
+    }));
+
+    // Credit Asset (Cash / Bank Outflow)
+    lines.push(await postLedgerLine(client, {
+      entryDate: setDate,
+      accountCategory: 'asset',
+      entryType: 'CREDIT',
+      amount: settlement.amount,
+      referenceType: 'settlement',
+      referenceId: settlement.id,
+      description: `Cash payout for profit settlement ${setCode}`,
+      recordedBy
+    }));
+  }
+
+  return lines;
+}
+
+/**
+ * Record balanced double-entry lines for an owner capital investment:
+ * DEBIT Asset (Cash / Bank received) & CREDIT Equity (Owner Capital)
+ */
+async function recordInvestmentLedger(client, investment, recordedBy) {
+  const lines = [];
+  const invDate = investment.investment_date ? new Date(investment.investment_date).toISOString() : new Date().toISOString();
+
+  if (toDecimal(investment.amount).greaterThan(0)) {
+    // Debit Asset (Cash Inflow)
+    lines.push(await postLedgerLine(client, {
+      entryDate: invDate,
+      accountCategory: 'asset',
+      entryType: 'DEBIT',
+      amount: investment.amount,
+      referenceType: 'investment',
+      referenceId: investment.id,
+      description: `Capital investment received from owner ${investment.owner_id} (${investment.investment_type})`,
+      recordedBy
+    }));
+
+    // Credit Equity (Contributed Capital)
+    lines.push(await postLedgerLine(client, {
+      entryDate: invDate,
+      accountCategory: 'equity',
+      entryType: 'CREDIT',
+      amount: investment.amount,
+      referenceType: 'investment',
+      referenceId: investment.id,
+      description: `Owner capital credited to owner ${investment.owner_id} (${investment.investment_type})`,
+      recordedBy
+    }));
+  }
+
+  return lines;
+}
+
+/**
  * Compute business financial metrics using exact fixed-precision calculations.
  */
 async function getFinancialMetrics() {
@@ -388,5 +502,8 @@ module.exports = {
   recordSaleLedger,
   reverseSaleLedger,
   recordPurchaseLedger,
+  recordExpenseLedger,
+  recordSettlementLedger,
+  recordInvestmentLedger,
   getFinancialMetrics
 };

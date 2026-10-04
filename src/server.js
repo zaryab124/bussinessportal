@@ -15,6 +15,10 @@ const saleRoutes = require('./routes/saleRoutes');
 const ledgerRoutes = require('./routes/ledgerRoutes');
 const profitRoutes = require('./routes/profitRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+const settlementRoutes = require('./routes/settlementRoutes');
+const investmentRoutes = require('./routes/investmentRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 
@@ -63,6 +67,10 @@ app.use('/api/sales', saleRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/profit', profitRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/settlements', settlementRoutes);
+app.use('/api/investments', investmentRoutes);
+app.use('/api/audit-logs', auditRoutes);
 
 // Fallback to SPA index for web routing
 app.get('*', (req, res, next) => {

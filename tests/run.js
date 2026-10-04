@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'test';
 const testDir = __dirname;
 const files = fs.readdirSync(testDir)
   .filter(f => f.endsWith('.test.js'))
-  .sort()
+  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
   .map(f => path.join(testDir, f));
 
 if (files.length === 0) {

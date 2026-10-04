@@ -28,7 +28,7 @@ test.before(async () => {
   const adminRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin@business.local', password: 'Admin@123456' })
+    body: JSON.stringify({ email: 'admin@business.local', password: '549229044ktb' })
   });
   const adminData = await adminRes.json();
   adminToken = adminData.token;
@@ -37,7 +37,7 @@ test.before(async () => {
   const ownerRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'owner1@business.local', password: 'Owner1@123456' })
+    body: JSON.stringify({ email: 'owner1@business.local', password: '549229044ktb' })
   });
   const ownerData = await ownerRes.json();
   ownerToken = ownerData.token;

@@ -119,7 +119,7 @@ test('6. Authentication: Successful Login and Role Session Issuance', async () =
   const adminRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin@business.local', password: 'Admin@123456' })
+    body: JSON.stringify({ email: 'admin@business.local', password: '549229044ktb' })
   });
 
   assert.equal(adminRes.status, 200);
@@ -132,7 +132,7 @@ test('6. Authentication: Successful Login and Role Session Issuance', async () =
   const ownerRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'owner1@business.local', password: 'Owner1@123456' })
+    body: JSON.stringify({ email: 'owner1@business.local', password: '549229044ktb' })
   });
 
   assert.equal(ownerRes.status, 200);
@@ -155,7 +155,7 @@ test('7. Protected Profile Route /api/auth/me', async () => {
   const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin@business.local', password: 'Admin@123456' })
+    body: JSON.stringify({ email: 'admin@business.local', password: '549229044ktb' })
   });
   const { token } = await loginRes.json();
 

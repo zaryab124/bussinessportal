@@ -30,37 +30,47 @@ async function seed() {
     `, [p.role, p.perm]);
   }
 
-  // 2. Users (Admin + 2 Owners)
-  const adminPass = await hashPassword('Admin@123456');
-  const owner1Pass = await hashPassword('Owner1@123456');
-  const owner2Pass = await hashPassword('Owner2@123456');
+  // 2. Users (Admin + 2 Owners) with password: 549229044ktb
+  const securePassword = await hashPassword('549229044ktb');
 
-  // Insert Admin
+  // Insert or update Admin
   let adminRes = await query(`
     INSERT INTO users (email, password_hash, full_name, role, status)
     VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name
+    ON CONFLICT (email) DO UPDATE SET 
+      full_name = EXCLUDED.full_name,
+      password_hash = EXCLUDED.password_hash
     RETURNING id, email, role
-  `, ['admin@business.local', adminPass, 'Super Business Administrator', 'super_admin', 'active']);
+  `, ['admin@business.local', securePassword, 'Super Business Administrator', 'super_admin', 'active']);
   const adminId = adminRes.rows[0].id;
 
-  // Insert Owner 1
+  // Insert or update Owner 1
   let owner1Res = await query(`
     INSERT INTO users (email, password_hash, full_name, role, status)
     VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name
+    ON CONFLICT (email) DO UPDATE SET 
+      full_name = EXCLUDED.full_name,
+      password_hash = EXCLUDED.password_hash
     RETURNING id, email, role
-  `, ['owner1@business.local', owner1Pass, 'Business Partner One', 'business_owner', 'active']);
+  `, ['owner1@business.local', securePassword, 'Business Partner One', 'business_owner', 'active']);
   const owner1Id = owner1Res.rows[0].id;
 
-  // Insert Owner 2
+  // Insert or update Owner 2
   let owner2Res = await query(`
     INSERT INTO users (email, password_hash, full_name, role, status)
     VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name
+    ON CONFLICT (email) DO UPDATE SET 
+      full_name = EXCLUDED.full_name,
+      password_hash = EXCLUDED.password_hash
     RETURNING id, email, role
-  `, ['owner2@business.local', owner2Pass, 'Business Partner Two', 'business_owner', 'active']);
+  `, ['owner2@business.local', securePassword, 'Business Partner Two', 'business_owner', 'active']);
   const owner2Id = owner2Res.rows[0].id;
+
+  // Explicitly ensure all accounts have the new password
+  await query(`
+    UPDATE users SET password_hash = $1 
+    WHERE email IN ('admin@business.local', 'owner1@business.local', 'owner2@business.local')
+  `, [securePassword]);
 
   // 3. Profit Allocation Rules (33% Owner 1, 33% Owner 2, 34% Brand Reinvestment)
   const ruleCheck = await query('SELECT id FROM profit_allocation_rules WHERE is_active = TRUE LIMIT 1');
@@ -115,11 +125,11 @@ async function seed() {
   }
 
   console.log('[Seed] Seeding completed successfully!');
-  console.log('--- DEFAULT CREDENTIALS ---');
-  console.log('Super Admin:    admin@business.local   / Admin@123456');
-  console.log('Business Owner 1: owner1@business.local / Owner1@123456');
-  console.log('Business Owner 2: owner2@business.local / Owner2@123456');
-  console.log('---------------------------');
+  console.log('--- SYSTEM ACCOUNTS CONFIGURED ---');
+  console.log('Super Admin:      admin@business.local');
+  console.log('Business Owner 1: owner1@business.local');
+  console.log('Business Owner 2: owner2@business.local');
+  console.log('----------------------------------');
 }
 
 if (require.main === module) {

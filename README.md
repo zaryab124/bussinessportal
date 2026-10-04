@@ -68,9 +68,9 @@ A production-ready, secure, full-stack web application designed for managing a p
 
 | Account | Email | Password | Role | Share |
 |---|---|---|---|---|
-| **Super Admin** | `admin@business.local` | `Admin@123456` | `super_admin` | Full Management |
-| **Business Owner 1** | `owner1@business.local` | `Owner1@123456` | `business_owner` | 33.00% Share |
-| **Business Owner 2** | `owner2@business.local` | `Owner2@123456` | `business_owner` | 33.00% Share |
+| **Super Admin** | `admin@business.local` | `549229044ktb` | `super_admin` | Full Management |
+| **Business Owner 1** | `owner1@business.local` | `549229044ktb` | `business_owner` | 33.00% Share |
+| **Business Owner 2** | `owner2@business.local` | `549229044ktb` | `business_owner` | 33.00% Share |
 | **Brand Reinvestment** | — | — | — | 34.00% Reserve |
 
 ---

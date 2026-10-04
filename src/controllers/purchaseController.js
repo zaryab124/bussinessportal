@@ -35,9 +35,11 @@ async function createPurchase(req, res) {
     // Validate items
     for (const item of items) {
       const qty = parseInt(item.quantity, 10);
-      const cost = toDecimal(item.unitCost);
+      const costVal = item.unitCost !== undefined ? item.unitCost : item.unit_cost;
+      const cost = toDecimal(costVal);
+      const prodId = item.productId || item.product_id;
 
-      if (!item.productId || isNaN(qty) || qty <= 0) {
+      if (!prodId || isNaN(qty) || qty <= 0) {
         return res.status(400).json({
           success: false,
           message: 'Each item must specify a valid product and a quantity greater than zero.'
@@ -66,9 +68,10 @@ async function createPurchase(req, res) {
 
       // 2. Process each item and apply weighted average stock costing
       for (const item of items) {
-        const productId = parseInt(item.productId, 10);
+        const productId = parseInt(item.productId || item.product_id, 10);
         const qtyPurchased = parseInt(item.quantity, 10);
-        const unitCost = toDecimal(item.unitCost).toFixed(2);
+        const costVal = item.unitCost !== undefined ? item.unitCost : item.unit_cost;
+        const unitCost = toDecimal(costVal).toFixed(2);
         const itemTotal = multiply(unitCost, qtyPurchased);
         orderTotalCost = add(orderTotalCost, itemTotal);
 

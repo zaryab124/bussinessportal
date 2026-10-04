@@ -189,10 +189,14 @@ async function createProduct(req, res) {
       });
     }
 
-    const cost = toDecimal(purchaseCostPerUnit);
-    const minPrice = toDecimal(minSellingPrice);
-    const maxPrice = toDecimal(maxSellingPrice);
-    const qty = parseInt(quantityPurchased, 10) || 0;
+    const minVal = minSellingPrice !== undefined ? minSellingPrice : (req.body.expected_min_price !== undefined ? req.body.expected_min_price : req.body.min_selling_price);
+    const maxVal = maxSellingPrice !== undefined ? maxSellingPrice : (req.body.expected_max_price !== undefined ? req.body.expected_max_price : req.body.max_selling_price);
+    const costVal = purchaseCostPerUnit !== undefined ? purchaseCostPerUnit : (req.body.purchase_cost_per_unit || 0);
+
+    const cost = toDecimal(costVal);
+    const minPrice = toDecimal(minVal);
+    const maxPrice = toDecimal(maxVal);
+    const qty = parseInt(quantityPurchased !== undefined ? quantityPurchased : (req.body.quantity_purchased || 0), 10) || 0;
 
     if (cost.isNegative()) {
       return res.status(400).json({ success: false, message: 'Purchase cost per unit cannot be negative.' });

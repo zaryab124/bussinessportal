@@ -26,16 +26,29 @@ async function createSale(req, res) {
       items
     } = req.body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    let saleItems = items;
+    if ((!saleItems || !Array.isArray(saleItems) || saleItems.length === 0) && (req.body.product_id || req.body.productId)) {
+      saleItems = [{
+        productId: req.body.product_id || req.body.productId,
+        quantity: req.body.quantity_sold !== undefined ? req.body.quantity_sold : req.body.quantity,
+        unitSellingPrice: req.body.actual_selling_price_per_unit || req.body.unitSellingPrice
+      }];
+    }
+
+    if (!saleItems || !Array.isArray(saleItems) || saleItems.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'A sale transaction must contain at least one product item.'
       });
     }
 
+    const isPriceOverrideApproved = priceOverrideApproved || req.body.is_price_override || false;
+    const effectiveOverrideReason = priceOverrideReason || req.body.price_override_reason || null;
+    const effectiveDirectExpenses = directExpenses !== undefined && directExpenses !== 0 ? directExpenses : (req.body.direct_expenses || 0);
+
     const invoiceNo = (saleInvoiceNumber && String(saleInvoiceNumber).trim()) || generateInvoiceNumber();
     const saleTimestamp = saleDate ? new Date(saleDate).toISOString() : new Date().toISOString();
-    const expenseAmount = toDecimal(directExpenses).toFixed(2);
+    const expenseAmount = toDecimal(effectiveDirectExpenses).toFixed(2);
 
     // Check duplicate invoice number
     const dupCheck = await query('SELECT id FROM sales WHERE sale_invoice_number = $1', [invoiceNo]);
@@ -47,11 +60,13 @@ async function createSale(req, res) {
     }
 
     // Validate items
-    for (const item of items) {
-      const qty = parseInt(item.quantity, 10);
-      const price = toDecimal(item.unitSellingPrice);
+    for (const item of saleItems) {
+      const prodId = item.productId || item.product_id;
+      const qty = parseInt(item.quantity !== undefined ? item.quantity : item.quantity_sold, 10);
+      const priceVal = item.unitSellingPrice !== undefined ? item.unitSellingPrice : item.actual_selling_price_per_unit;
+      const price = toDecimal(priceVal);
 
-      if (!item.productId || isNaN(qty) || qty <= 0) {
+      if (!prodId || isNaN(qty) || qty <= 0) {
         return res.status(400).json({
           success: false,
           message: 'Each item must specify a valid product and a quantity greater than zero.'
@@ -73,10 +88,11 @@ async function createSale(req, res) {
       const verifiedItems = [];
 
       // 1. Validate each product: price range check & overselling check
-      for (const item of items) {
-        const productId = parseInt(item.productId, 10);
-        const qtySold = parseInt(item.quantity, 10);
-        const unitSellingPrice = toDecimal(item.unitSellingPrice).toFixed(2);
+      for (const item of saleItems) {
+        const productId = parseInt(item.productId || item.product_id, 10);
+        const qtySold = parseInt(item.quantity !== undefined ? item.quantity : item.quantity_sold, 10);
+        const priceVal = item.unitSellingPrice !== undefined ? item.unitSellingPrice : item.actual_selling_price_per_unit;
+        const unitSellingPrice = toDecimal(priceVal).toFixed(2);
 
         // Lock product row to prevent overselling race conditions
         const prodRes = await client.query('SELECT * FROM products WHERE id = $1 FOR UPDATE', [productId]);
@@ -100,7 +116,7 @@ async function createSale(req, res) {
 
         const isOutsideRange = sellingPriceDec.lessThan(minPrice) || sellingPriceDec.greaterThan(maxPrice);
         if (isOutsideRange) {
-          if (!priceOverrideApproved || !priceOverrideReason || String(priceOverrideReason).trim().length === 0) {
+          if (!isPriceOverrideApproved || !effectiveOverrideReason || String(effectiveOverrideReason).trim().length === 0) {
             throw new Error(
               `Selling price Rs. ${unitSellingPrice} for "${product.name}" is outside configured range (Rs. ${product.min_selling_price} – Rs. ${product.max_selling_price}). Authorized approval and documented reason are required.`
             );
@@ -172,7 +188,7 @@ async function createSale(req, res) {
         paymentStatus,
         customerReference ? String(customerReference).trim() : null,
         hasPriceOverride,
-        hasPriceOverride ? String(priceOverrideReason).trim() : null,
+        hasPriceOverride ? String(effectiveOverrideReason).trim() : null,
         req.user.id
       ]);
 
@@ -374,12 +390,13 @@ async function cancelSale(req, res) {
   try {
     const id = parseInt(req.params.id, 10);
     const { cancellationReason } = req.body;
+    const effectiveReason = cancellationReason || req.body.cancellation_reason || req.body.reason;
 
     if (isNaN(id)) {
       return res.status(400).json({ success: false, message: 'Invalid sale ID.' });
     }
 
-    if (!cancellationReason || String(cancellationReason).trim().length === 0) {
+    if (!effectiveReason || String(effectiveReason).trim().length === 0) {
       return res.status(400).json({
         success: false,
         message: 'A documented cancellation reason is required for financial trace.'
@@ -429,7 +446,7 @@ async function cancelSale(req, res) {
           item.quantity,
           item.unit_purchase_cost,
           sale.id,
-          `Sale Cancellation (${sale.sale_invoice_number}): ${String(cancellationReason).trim()}`,
+          `Sale Cancellation (${sale.sale_invoice_number}): ${String(effectiveReason).trim()}`,
           req.user.id
         ]);
       }
@@ -443,7 +460,7 @@ async function cancelSale(req, res) {
       `, [id]);
 
       // Reverse financial ledger entries traceably
-      await reverseSaleLedger(client, sale, req.user.id, cancellationReason);
+      await reverseSaleLedger(client, sale, req.user.id, effectiveReason);
 
       // Reverse profit allocations
       await reverseSaleProfitAllocations(client, sale.id);
@@ -456,7 +473,7 @@ async function cancelSale(req, res) {
       action: 'SALE_CANCELLED',
       entityType: 'sales',
       entityId: id,
-      newValues: { invoiceNumber: cancelledSale.sale_invoice_number, reason: cancellationReason },
+      newValues: { invoiceNumber: cancelledSale.sale_invoice_number, reason: effectiveReason },
       req
     });
 

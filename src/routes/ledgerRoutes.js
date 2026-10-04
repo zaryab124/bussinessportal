@@ -10,5 +10,6 @@ router.get('/summary', authMiddleware, ledgerController.getFinancialSummary);
 
 // Record traceable ledger adjustment (Super Admin only)
 router.post('/adjustment', authMiddleware, requireRole('super_admin'), ledgerController.recordTraceableAdjustment);
+router.post('/adjustments', authMiddleware, requireRole('super_admin'), ledgerController.recordTraceableAdjustment);
 
 module.exports = router;

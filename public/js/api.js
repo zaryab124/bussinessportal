@@ -317,6 +317,15 @@ const API = {
 
   async getReinvestmentReserves() {
     return this.request('/api/profit/reinvestment', { method: 'GET' });
+  },
+
+  // Dashboard analytics endpoints
+  async getAdminDashboard() {
+    return this.request('/api/dashboard/admin', { method: 'GET' });
+  },
+
+  async getOwnerDashboard() {
+    return this.request('/api/dashboard/owner', { method: 'GET' });
   }
 };
 

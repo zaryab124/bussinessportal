@@ -90,7 +90,7 @@ test('1. Record a purchase order and verify stock_purchases, purchase_items, and
 
   // Verify inventory_movements record
   const movementRes = await query(
-    'SELECT movement_type, quantity, reference_type FROM inventory_movements WHERE reference_id = $1',
+    "SELECT movement_type, quantity, reference_type FROM inventory_movements WHERE reference_type = 'purchase_order' AND reference_id = $1",
     [data.purchase.id]
   );
   assert.equal(movementRes.rows.length, 1);

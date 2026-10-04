@@ -160,6 +160,7 @@
               <button class="btn btn-secondary" onclick="OwnersModule.showView()">Manage Business Owners</button>
             </div>
           </div>
+          <div id="admin-dashboard-dynamic-content"></div>
         </div>
 
         <!-- Inventory Management Panel (Phase 3) -->
@@ -537,28 +538,44 @@
       <div id="owner-view" class="hidden">
         <div class="stat-grid">
           <div class="stat-card">
-            <div class="stat-label">Your Profit Share</div>
-            <div class="stat-value">33.00%</div>
+            <div class="stat-label">Your Profit Share %</div>
+            <div id="owner-kpi-share" class="stat-value" style="color: var(--accent-color);">33.00%</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Reinvestment Reserve</div>
-            <div class="stat-value">34.00%</div>
+            <div class="stat-label">Your Allocated Profit</div>
+            <div id="owner-kpi-allocated" class="stat-value text-info">Rs. 0.00</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Allocated Profit</div>
-            <div class="stat-value text-info">Rs. 0.00</div>
+            <div class="stat-label">Profit Paid / Settled</div>
+            <div id="owner-kpi-settled" class="stat-value" style="color: var(--text-secondary);">Rs. 0.00</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Pending Settlements</div>
-            <div class="stat-value text-warning">Rs. 0.00</div>
+            <div class="stat-label">Outstanding Payable</div>
+            <div id="owner-kpi-payable" class="stat-value text-success" style="font-size: 1.4rem;">Rs. 0.00</div>
           </div>
         </div>
 
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Owner Private Workspace</h3>
-          <p style="color: var(--text-secondary);">
-            Welcome to your private business performance portal. All stock movements, sales revenues, and profit shares will be updated in real time as administrators register confirmed sales.
-          </p>
+        <div class="stat-grid" style="margin-top: -10px;">
+          <div class="stat-card">
+            <div class="stat-label">Contributed Capital</div>
+            <div id="owner-kpi-invested" class="stat-value text-info">Rs. 0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Inventory Asset Valuation</div>
+            <div id="owner-kpi-inventory-val" class="stat-value" style="color: #60a5fa;">Rs. 0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Business Gross Revenue</div>
+            <div id="owner-kpi-bus-revenue" class="stat-value" style="color: var(--accent-color);">Rs. 0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Business Net Distributable Profit</div>
+            <div id="owner-kpi-bus-net-profit" class="stat-value text-success">Rs. 0.00</div>
+          </div>
+        </div>
+
+        <div id="owner-dashboard-dynamic-content">
+          <!-- Dynamically populated monthly allocations, transaction details, and capital contributions -->
         </div>
       </div>
     </main>
@@ -1299,5 +1316,6 @@
   <script src="/js/sales.js"></script>
   <script src="/js/ledger.js"></script>
   <script src="/js/profit.js"></script>
+  <script src="/js/dashboard.js"></script>
 </body>
 </html>

@@ -18,11 +18,17 @@ async function getDb() {
   } else {
     if (!pglite) {
       const { PGlite } = require('@electric-sql/pglite');
-      const resolvedDir = path.resolve(process.cwd(), config.dataDir);
-      if (!fs.existsSync(resolvedDir)) {
-        fs.mkdirSync(resolvedDir, { recursive: true });
+      const dataDirBase = process.env.VERCEL ? path.join('/tmp', 'pglite') : config.dataDir;
+      const resolvedDir = path.resolve(process.cwd(), dataDirBase);
+      try {
+        if (!fs.existsSync(resolvedDir)) {
+          fs.mkdirSync(resolvedDir, { recursive: true });
+        }
+        pglite = new PGlite(resolvedDir);
+      } catch (err) {
+        console.warn('[PGlite Warning] Falling back to in-memory instance:', err.message);
+        pglite = new PGlite();
       }
-      pglite = new PGlite(resolvedDir);
     }
     return { type: 'pglite', client: pglite };
   }

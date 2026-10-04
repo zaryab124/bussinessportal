@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
+const fs = require('fs');
 const config = require('./config');
 const { query } = require('./config/db');
 
@@ -58,6 +59,29 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Database auto-bootstrap for serverless / zero-config deployments
+let dbInitDone = false;
+async function ensureDbReady() {
+  if (dbInitDone) return;
+  try {
+    const { runMigrations } = require('./db/migrate');
+    const { seed } = require('./db/seed');
+    await runMigrations();
+    await seed();
+    dbInitDone = true;
+  } catch (err) {
+    console.warn('[Auto-Migration Note]', err.message);
+    dbInitDone = true;
+  }
+}
+
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    await ensureDbReady();
+  }
+  next();
+});
+
 // Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -79,7 +103,11 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) {
     return next();
   }
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  const indexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.sendFile(path.resolve(process.cwd(), 'public/index.html'));
 });
 
 // Centralized error handling

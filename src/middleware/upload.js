@@ -2,11 +2,17 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const UPLOAD_DIR = path.resolve(process.cwd(), 'uploads/products');
+const UPLOAD_DIR = process.env.VERCEL 
+  ? path.join('/tmp', 'uploads', 'products') 
+  : path.resolve(process.cwd(), 'uploads/products');
 
 // Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+} catch (e) {
+  console.warn('[Upload Directory Notice]', e.message);
 }
 
 // Allowed MIME types
